@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能算命系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <style>
+        :root {
+            --primary-color: #FF9900;
+            --secondary-color: #232F3E;
+            --background-color: #131921;
+            --text-color: #FFFFFF;
+            --border-color: #37475A;
+            --hover-color: #FF9900;
+            --card-bg: #1A222E;
+            --input-bg: #0F1111;
+            --error-color: #FF6B6B;
+            --success-color: #2ECC71;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        #app {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--secondary-color);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            padding: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .input-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        input, select {
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            width: 200px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(255, 153, 0, 0.5);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            min-width: 150px;
+        }
+
+        button:hover {
+            background-color: #FFA31A;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
+        }
+
+        button:disabled {
+            background-color: #4A4A4A;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            color: #888;
+        }
+
+        .fortune-result {
+            margin-top: 30px;
+            padding: 25px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .fortune-result::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, var(--primary-color), #FFA31A);
+        }
+
+        .fortune-result h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 1.5em;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .fortune-result p {
+            margin: 15px 0;
+            line-height: 1.6;
+            font-size: 1.1em;
+            color: var(--text-color);
+        }
+
+        .hexagram-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .error {
+            color: var(--error-color);
+            text-align: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid var(--error-color);
+        }
+
+        .five-elements {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: var(--secondary-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .element-item {
+            text-align: center;
+            padding: 10px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            min-width: 100px;
+            transition: all 0.3s ease;
+        }
+
+        .element-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .element-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 0.9em;
+            text-align: right;
+            margin-top: 20px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+        }
+
+        select option {
+            background-color: var(--input-bg);
+            color: var(--text-color);
+        }
+
+        @media (max-width: 600px) {
+            .input-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            input, select, button {
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .five-elements {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+
+            .element-item {
+                min-width: 45%;
+            }
+        }
+
+        /* 添加动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fortune-result {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .element-item {
+            animation: fadeIn 0.5s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .element-item:nth-child(1) { animation-delay: 0.1s; }
+        .element-item:nth-child(2) { animation-delay: 0.2s; }
+        .element-item:nth-child(3) { animation-delay: 0.3s; }
+        .element-item:nth-child(4) { animation-delay: 0.4s; }
+
+        /* 添加滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-color);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <h1>✨ 智能算命系统 ✨</h1>
+        </div>
+        
+        <div class="input-section">
+            <input 
+                v-model="name" 
+                placeholder="请输入你的名字"
+                @keyup.enter="getFortune"
+            />
+            <input 
+                type="date" 
+                v-model="birthdate"
+            />
+            <select v-model="selectedCategory">
+                <option value="总运">总运</option>
+                <option value="爱情">爱情运</option>
+                <option value="财运">财运</option>
+                <option value="事业">事业运</option>
+                <option value="旅行">旅行运</option>
+            </select>
+            <button @click="getFortune" :disabled="isLoading">
+                {{ isLoading ? '正在占卜...' : '开始算命' }}
+            </button>
+        </div>
+
+        <div v-if="error" class="error">
+            <strong>错误提示：</strong> {{ error }}
+        </div>
+
+        <div v-if="fortuneResult" class="fortune-result">
+            <h3>🔮 运势预测</h3>
+            <div class="five-elements">
+                <div class="element-item">
+                    <div class="element-icon">🌟</div>
+                    <div>五行：{{ fortuneResult.five_element }}</div>
+                </div>
+                <div class="element-item">
+                    <div class="element-icon">🐾</div>
+                    <div>生肖：{{ fortuneResult.zodiac }}</div>
+                </div>
+                <div class="element-item">
+                    <div class="element-icon">⭐</div>
+                    <div>星座：{{ fortuneResult.constellation }}</div>
+                </div>
+                <div class="element-item">
+                    <div class="element-icon">🍁</div>
+                    <div>季节：{{ fortuneResult.season }}</div>
+                </div>
+            </div>
+            
+            <p class="fortune-text">{{ fortuneResult.fortune }}</p>
+            <p>运势类型：{{ fortuneResult.category }}</p>
+            <p>幸运数字：{{ fortuneResult.lucky_number }}</p>
+            <p>幸运颜色：{{ fortuneResult.lucky_color }}</p>
+            
+            <div class="hexagram-section">
+                <h3>📖 易经卦象</h3>
+                <p>卦名：{{ fortuneResult.hexagram.name }}</p>
+                <p>卦象：{{ fortuneResult.hexagram.image }}</p>
+                <p>卦意：{{ fortuneResult.hexagram.meaning }}</p>
+                <p>经文：{{ fortuneResult.hexagram.description }}</p>
+                <p>五行：{{ fortuneResult.hexagram.elements.join('→') }}</p>
+            </div>
+            
+            <p class="timestamp">占卜时间：{{ fortuneResult.timestamp }}</p>
+        </div>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                name: '张璐',
+                birthdate: '1981-12-27',
+                selectedCategory: '总运',
+                fortuneResult: null,
+                isLoading: false,
+                error: null,
+                apiBaseUrl: 'http://127.0.0.1:8080'
+            },
+            methods: {
+                getFortune() {
+                    if (!this.name.trim()) {
+                        this.error = '请输入你的名字';
+                        return;
+                    }
+                    
+                    if (!this.birthdate) {
+                        this.error = '请选择出生日期';
+                        return;
+                    }
+                    
+                    this.error = null;
+                    this.isLoading = true;
+                    
+                    const url = `${this.apiBaseUrl}/api/fortune?name=${encodeURIComponent(this.name)}&category=${encodeURIComponent(this.selectedCategory)}&birthdate=${encodeURIComponent(this.birthdate)}`;
+                    
+                    console.log('正在请求:', url);
+                    
+                    fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        mode: 'cors'
+                    })
+                    .then(response => {
+                        console.log('收到响应:', response.status);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('收到数据:', data);
+                        if (data.error) {
+                            throw new Error(data.message || '获取运势失败');
+                        }
+                        this.fortuneResult = data;
+                        this.error = null;
+                    })
+                    .catch(err => {
+                        console.error('详细错误:', err);
+                        if (err.message.includes('Failed to fetch')) {
+                            this.error = '无法连接到服务器，请确保后端服务器已启动 (python app.py)';
+                        } else {
+                            this.error = `请求失败: ${err.message}`;
+                        }
+                    })
+                    .finally(() => {
+                        this.isLoading = false;
+                    });
+                }
+            },
+            mounted() {
+                setTimeout(() => {
+                    this.getFortune();
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html> 
