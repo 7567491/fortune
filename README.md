@@ -1,2 +1,2 @@
-# fortune
-易经算命
+#Fortune Teller YI
+易经算命Yi Tsing Fortune Teller
